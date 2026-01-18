@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  /* Cashplet Brand Colors based on your logo */
+  --color-brand-primary: #4a5568;    /* Dark Slate for text/headings */
+  --color-brand-accent: #81c784;     /* Emerald for 'Earning' and icons */
+  --color-brand-bg: #f8fafc;         /* Very light grey for background */
+  
+  /* Update the amber overrides to your new brand colors */
+  --color-amber-500: var(--color-brand-accent);
+  --color-amber-600: #66bb6a;
+}
+
+body {
+  background-color: var(--color-brand-bg);
+}
