@@ -31,14 +31,43 @@ const AuthView = ({ supabase, onAuthSuccess }) => {
     if (!supabase) return setError('Waiting for database library...');
     setError('');
     setLoading(true);
+
     try {
-      const { error: authError } = isLogin
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password });
-      if (authError) throw authError;
+      if (isLogin) {
+        // Login Logic
+        const { error: authError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        if (authError) throw authError;
+      } else {
+        // Signup Logic (with auto-login assumption)
+        const { data, error: authError } = await supabase.auth.signUp({
+          email,
+          password
+        });
+
+        if (authError) throw authError;
+
+        // If "Confirm Email" is OFF in dashboard, session will exist immediately
+        if (!data.session) {
+          // This hits if you forgot to turn off the toggle in the dashboard
+          setError("Signup successful, but email confirmation is still required in your Supabase settings.");
+          setLoading(false);
+          return;
+        }
+      }
+
       onAuthSuccess();
     } catch (err) {
-      setError(err.message);
+      // Clearer error reporting for common issues
+      let friendlyMessage = err.message;
+      if (err.message.includes("User already registered")) {
+        friendlyMessage = "This email is already in use. Try logging in instead.";
+      } else if (err.message.includes("should be at least 6 characters")) {
+        friendlyMessage = "Password is too weak. It must be at least 6 characters.";
+      }
+      setError(friendlyMessage);
     } finally {
       setLoading(false);
     }
