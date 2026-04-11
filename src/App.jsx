@@ -6,6 +6,8 @@ import AuthView from './components/AuthView';
 import AccountsView from './components/Accounts/AccountsView';
 import CategoriesView from "./components/Categories/CategoriesView";
 import DashboardView from './components/DashboardView';
+import DeleteModal from './components/Common/DeleteModal';
+import { isLiability, AccountTypes } from './constants/accountTypes';
 
 const App = () => {
   const formRef = useRef(null);
@@ -32,6 +34,22 @@ const App = () => {
     start: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0],
     end: new Date().toISOString().split('T')[0]
   });
+
+  const [deleteConfig, setDeleteConfig] = useState({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { }
+  });
+
+  const requestDelete = (title, message, action) => {
+    setDeleteConfig({
+      isOpen: true,
+      title,
+      message,
+      onConfirm: action
+    });
+  };
 
   // --- Supabase Init ---
   useEffect(() => {
@@ -96,19 +114,48 @@ const App = () => {
   useEffect(() => { if (user) fetchData(); }, [user]);
 
   // --- Record Handlers ---
-  const handleSaveRecord = async (e) => {
-    if (e) e.preventDefault();
-    const recordData = { amount: parseFloat(amount), type, category: activeCategory, account_id: selectedAccountId, note, user_id: user.id };
-    const { error } = editingId
-      ? await supabase.from('records').update(recordData).eq('id', editingId)
-      : await supabase.from('records').insert([recordData]);
-    if (!error) { setEditingId(null); setAmount(''); setNote(''); fetchData(); }
-  };
 
   const deleteRecord = async (id) => {
     if (window.confirm("Confirm deletion?")) {
       await supabase.from('records').delete().eq('id', id);
       fetchData();
+    }
+  };
+
+  const handleSaveRecord = async (e) => {
+    if (e) e.preventDefault();
+    if (!amount || !selectedAccountId) return;
+
+    const numAmount = parseFloat(amount);
+    const account = accounts.find(a => a.id === selectedAccountId);
+    const isLiability = ['credit', 'payable'].includes(account.type);
+
+    let newBalance = parseFloat(account.balance);
+
+    if (isLiability(account.type)) {
+      newBalance = type === 'expense' ? newBalance + numAmount : newBalance - numAmount;
+    } else {
+      newBalance = type === 'expense' ? newBalance - numAmount : newBalance + numAmount;
+    }
+
+    setLoading(true);
+    try {
+      const recordData = {
+        amount: numAmount, type, category: activeCategory,
+        account_id: selectedAccountId, note, user_id: user.id
+      };
+
+      await supabase.from('records').insert([recordData]);
+
+      await supabase.from('accounts').update({ balance: newBalance }).eq('id', selectedAccountId);
+
+      setAmount('');
+      setNote('');
+      fetchData();
+    } catch (err) {
+      console.error("Save error:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -135,7 +182,10 @@ const App = () => {
     return { totals, spending };
   }, [records, dateRange]);
 
-  const totalBalance = accounts.reduce((sum, acc) => sum + parseFloat(acc.balance), 0);
+  const totalBalance = accounts.reduce((sum, acc) => {
+    const bal = parseFloat(acc.balance) || 0;
+    return isLiability(acc.type) ? sum - bal : sum + bal;
+  }, 0);
 
   if (!supabaseLibLoaded) return <div className="min-h-screen bg-[#FFFBF4] flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500" /></div>;
 
@@ -149,7 +199,12 @@ const App = () => {
         ) : (
           <>
             {view === 'accounts' ? (
-              <AccountsView setView={setView} accounts={accounts} fetchData={fetchData} supabase={supabase} user={user} />
+              <AccountsView
+                setView={setView} accounts={accounts}
+                fetchData={fetchData}
+                supabase={supabase}
+                user={user}
+                requestDelete={requestDelete} />
             ) : view === 'categories' ? (
               <CategoriesView setView={setView} supabase={supabase} user={user} />
             ) : (
@@ -183,6 +238,11 @@ const App = () => {
           </>
         )}
       </main>
+      {/* Delete Confirmation Modal */}
+      <DeleteModal
+        {...deleteConfig}
+        onClose={() => setDeleteConfig({ ...deleteConfig, isOpen: false })}
+      />
     </div>
   );
 };
