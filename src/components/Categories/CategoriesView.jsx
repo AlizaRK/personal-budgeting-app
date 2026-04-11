@@ -1,11 +1,28 @@
-import React from 'react';
+import { useEffect } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { useCategories } from '../../hooks/useCategories';
 import CategoryForm from './CategoryForm';
 import CategoryList from './CategoryList';
 
-const CategoriesView = ({ setView, supabase, user }) => {
-  const { expenseCategories, incomeCategories, addCategory, removeCategory } = useCategories(supabase, user);
+const CategoriesView = ({ setView, supabase, user, requestDelete }) => {
+  const {
+    expenseCategories,
+    incomeCategories,
+    addCategory,
+    removeCategory,
+    editCategory,
+    setEditingCategory,
+    editingCategory
+  } = useCategories(supabase, user);
+
+
+  const handleDelete = (id) => {
+    requestDelete(
+      "Delete Category?",
+      "Are you sure? This will not delete your transactions, but they will lose their category label.",
+      () => removeCategory(id)
+    );
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -17,11 +34,29 @@ const CategoriesView = ({ setView, supabase, user }) => {
         <div className="w-12"></div>
       </header>
 
-      <CategoryForm onAdd={addCategory} />
+      {/* Ensure you pass editingCategory if your form needs it to toggle between Add/Edit */}
+      <CategoryForm
+        onAdd={addCategory}
+        onEdit={editCategory}
+        editingCategory={editingCategory}
+        setEditingCategory={setEditingCategory}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <CategoryList title="Expenses" categories={expenseCategories} onRemove={removeCategory} color="orange" />
-        <CategoryList title="Income" categories={incomeCategories} onRemove={removeCategory} color="emerald" />
+        <CategoryList
+          title="Expense Categories"
+          categories={expenseCategories}
+          onEdit={setEditingCategory}
+          onRemove={handleDelete}
+          color="orange"
+        />
+        <CategoryList
+          title="Income Categories"
+          categories={incomeCategories}
+          onEdit={setEditingCategory}
+          onRemove={handleDelete}
+          color="emerald"
+        />
       </div>
     </div>
   );

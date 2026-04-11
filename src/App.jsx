@@ -7,7 +7,7 @@ import AccountsView from './components/Accounts/AccountsView';
 import CategoriesView from "./components/Categories/CategoriesView";
 import DashboardView from './components/DashboardView';
 import DeleteModal from './components/Common/DeleteModal';
-import { isLiability, AccountTypes } from './constants/accountTypes';
+import { isLiability } from './constants/accountTypes';
 
 const App = () => {
   const formRef = useRef(null);
@@ -148,6 +148,16 @@ const App = () => {
       await supabase.from('records').insert([recordData]);
 
       await supabase.from('accounts').update({ balance: newBalance }).eq('id', selectedAccountId);
+      try {
+        await supabase.from('records').insert([recordData]);
+        await supabase.from('accounts').update({ balance: newBalance }).eq('id', selectedAccountId);
+
+        await fetchData();
+
+        resetForm();
+      } catch (err) {
+        console.error(err);
+      }
 
       setAmount('');
       setNote('');
@@ -206,7 +216,12 @@ const App = () => {
                 user={user}
                 requestDelete={requestDelete} />
             ) : view === 'categories' ? (
-              <CategoriesView setView={setView} supabase={supabase} user={user} />
+              <CategoriesView
+                supabase={supabase}
+                user={user}
+                setView={setView}
+                requestDelete={requestDelete} // <--- YOU ARE LIKELY MISSING THIS LINE
+              />
             ) : (
               <DashboardView
                 analytics={analytics}
