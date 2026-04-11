@@ -1,5 +1,62 @@
-import React from 'react';
-import { TrendingUp, Calendar, Target, History, Wallet, ArrowUpCircle, ArrowDownCircle, PencilLine, Trash2 } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { TrendingUp, Calendar, Target, History, Wallet, 
+    ArrowUpCircle, ArrowDownCircle, PencilLine, Trash2, 
+    Tag, AlertCircle, ChevronDown, Check } from 'lucide-react';
+
+// --- HELPER COMPONENT FOR CUSTOM SELECT ---
+const CustomFloatingSelect = ({ label, value, options, onChange, icon: Icon, placeholder, disabled }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const containerRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (containerRef.current && !containerRef.current.contains(e.target)) setIsOpen(false);
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const selectedOption = options.find(opt => opt.id === value || opt.name === value);
+
+    return (
+        <div className="relative flex-1" ref={containerRef}>
+            <label className="text-[10px] font-black text-gray-400 uppercase ml-2 mb-1 block tracking-widest">
+                {label}
+            </label>
+            <button
+                type="button"
+                disabled={disabled}
+                onClick={() => setIsOpen(!isOpen)}
+                className={`w-full flex items-center justify-between p-4 rounded-2xl font-bold transition-all border-2 
+          ${disabled ? 'bg-gray-100 cursor-not-allowed text-gray-400 border-transparent' : 'bg-gray-50 text-gray-700 border-transparent hover:border-amber-200'}`}
+            >
+                <div className="flex items-center gap-2 truncate">
+                    {disabled ? <AlertCircle size={16} /> : <Icon size={16} className="text-amber-500" />}
+                    <span className="truncate">{disabled ? placeholder : (selectedOption?.name || placeholder)}</span>
+                </div>
+                {!disabled && <ChevronDown size={16} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />}
+            </button>
+
+            {isOpen && !disabled && (
+                <div className="absolute top-full left-0 w-full mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 z-[60] overflow-hidden animate-in fade-in slide-in-from-top-2">
+                    <div className="max-height-[250px] overflow-y-auto">
+                        {options.map((opt) => (
+                            <button
+                                key={opt.id}
+                                type="button"
+                                onClick={() => { onChange(opt.id || opt.name); setIsOpen(false); }}
+                                className="w-full flex items-center justify-between p-4 hover:bg-amber-50 transition-colors text-left"
+                            >
+                                <span className="font-bold text-sm text-gray-700">{opt.name}</span>
+                                {(opt.id === value || opt.name === value) && <Check size={16} className="text-amber-500" />}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
 
 const DashboardView = ({
     analytics,
@@ -27,6 +84,7 @@ const DashboardView = ({
     incomeCategories,
     formRef
 }) => {
+    const currentCategories = type === 'expense' ? expenseCategories : incomeCategories;
     return (
         <div className="space-y-8 animate-in fade-in duration-500">
 
@@ -92,31 +150,66 @@ const DashboardView = ({
                     </div>
 
                     {/* Transaction Form */}
+                    {/* Transaction Form */}
                     <section ref={formRef} className="bg-white rounded-[2.5rem] p-8 shadow-xl border border-amber-50">
                         <form onSubmit={handleSaveRecord} className="space-y-6">
+                            {/* Type Toggle */}
                             <div className="flex bg-gray-50 p-1.5 rounded-3xl">
                                 <button type="button" onClick={() => setType('expense')} className={`flex-1 py-4 rounded-[1.25rem] text-sm font-black transition-all ${type === 'expense' ? 'bg-white shadow-sm text-orange-600' : 'text-gray-400'}`}>Expense</button>
                                 <button type="button" onClick={() => setType('earning')} className={`flex-1 py-4 rounded-[1.25rem] text-sm font-black transition-all ${type === 'earning' ? 'bg-white shadow-sm text-emerald-600' : 'text-gray-400'}`}>Earning</button>
                             </div>
-                            <input
-                                type="number"
-                                step="0.01"
-                                placeholder="0.00"
-                                value={amount}
-                                onChange={e => setAmount(e.target.value)}
-                                className="w-full py-4 text-5xl font-black bg-transparent border-b-4 border-gray-50 focus:border-amber-400 outline-none transition-all"
-                            />
-                            <div className="grid grid-cols-2 gap-4">
-                                <select value={selectedAccountId} onChange={e => setSelectedAccountId(e.target.value)} className="bg-gray-50 p-4 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-amber-500">
-                                    {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
-                                </select>
-                                <select value={activeCategory} onChange={e => setActiveCategory(e.target.value)} className="bg-gray-50 p-4 rounded-2xl font-bold">
-                                    {(type === 'expense' ? expenseCategories : incomeCategories).map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-                                </select>
+
+                            {/* Amount Input */}
+                            <div className="relative">
+                                <span className="absolute left-0 bottom-4 text-3xl font-black text-gray-300">$</span>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    placeholder="0.00"
+                                    value={amount}
+                                    onChange={e => setAmount(e.target.value)}
+                                    className="w-full py-4 pl-8 text-5xl font-black bg-transparent border-b-4 border-gray-50 focus:border-amber-400 outline-none transition-all"
+                                />
                             </div>
-                            <input type="text" placeholder="Note (optional)" value={note} onChange={e => setNote(e.target.value)} className="w-full bg-gray-50 p-4 rounded-2xl font-bold" />
+
+                            {/* Custom Dropdowns Row */}
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <CustomFloatingSelect
+                                    label="Account"
+                                    value={selectedAccountId}
+                                    options={accounts}
+                                    onChange={setSelectedAccountId}
+                                    icon={Wallet}
+                                    placeholder="No Accounts"
+                                    disabled={accounts.length === 0}
+                                />
+                                <CustomFloatingSelect
+                                    label="Category"
+                                    value={activeCategory}
+                                    options={type === 'expense' ? expenseCategories : incomeCategories}
+                                    onChange={setActiveCategory}
+                                    icon={Tag}
+                                    placeholder="No Categories"
+                                    disabled={(type === 'expense' ? expenseCategories : incomeCategories).length === 0}
+                                />
+                            </div>
+
+                            {/* Note Input */}
+                            <input
+                                type="text"
+                                placeholder="Note (optional)"
+                                value={note}
+                                onChange={e => setNote(e.target.value)}
+                                className="w-full bg-gray-50 p-4 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-amber-400 focus:bg-white transition-all"
+                            />
+
+                            {/* Action Buttons */}
                             <div className="flex gap-2">
-                                <button type="submit" className={`flex-1 py-5 rounded-[1.8rem] font-black text-lg text-white shadow-xl transition-all active:scale-95 ${editingId ? 'bg-blue-600' : 'bg-amber-500'}`}>
+                                <button
+                                    type="submit"
+                                    disabled={accounts.length === 0}
+                                    className={`flex-1 py-5 rounded-[1.8rem] font-black text-lg text-white shadow-xl transition-all active:scale-95 ${editingId ? 'bg-blue-600' : 'bg-amber-500'} ${accounts.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                >
                                     {editingId ? 'Update' : 'Save'} Transaction
                                 </button>
                                 {editingId && (
@@ -127,7 +220,7 @@ const DashboardView = ({
                                             setAmount('');
                                             setNote('');
                                         }}
-                                        className="px-6 py-5 rounded-[1.8rem] font-black bg-gray-100 text-gray-500"
+                                        className="px-6 py-5 rounded-[1.8rem] font-black bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
                                     >
                                         Cancel
                                     </button>
