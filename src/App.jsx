@@ -66,6 +66,46 @@ const App = () => {
     }
   }, []);
 
+  const addAccount = async (name, balance) => {
+    if (!user || !supabase) return;
+    const { error } = await supabase
+      .from('accounts')
+      .insert([{ name, balance, user_id: user.id }]);
+
+    if (error) {
+      console.error("Error adding account:", error.message);
+    } else {
+      fetchData(); // Refresh the list
+    }
+  };
+
+  const deleteAccount = async (id) => {
+    if (!window.confirm("Are you sure? This will remove the account from your records.")) return;
+
+    const { error } = await supabase
+      .from('accounts')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error("Delete failed:", error.message);
+    } else {
+      fetchData(); // Refresh the UI
+    }
+  };
+
+  const addCategory = async (catData) => {
+    const { error } = await supabase
+      .from('categories')
+      .insert([{ ...catData, user_id: user.id }]);
+    if (!error) fetchData();
+  };
+
+  const removeCategory = async (id) => {
+    const { error } = await supabase.from('categories').delete().eq('id', id);
+    if (!error) fetchData();
+  };
+
   const supabase = useMemo(() => {
     if (!supabaseLibLoaded || !window.supabase) return null;
     const url = import.meta.env.VITE_SUPABASE_URL;
@@ -231,9 +271,21 @@ const App = () => {
         ) : view === 'update-password' ? ( // ADD THIS BLOCK
           <UpdatePasswordView supabase={supabase} setView={setView} />
         ) : view === 'accounts' ? (
-          <AccountsView setView={setView} accounts={accounts} fetchData={fetchData} />
+          <AccountsView
+            setView={setView}
+            accounts={accounts}
+            fetchData={fetchData}
+            addAccount={addAccount} // ADD THIS PROP
+            deleteAccount={deleteAccount} // Make sure you pass this too!
+          />
         ) : view === 'categories' ? (
-          <CategoriesView setView={setView} expenseCategories={expenseCategories} incomeCategories={incomeCategories} fetchData={fetchData} />
+          <CategoriesView
+            setView={setView}
+            expenseCategories={expenseCategories}
+            incomeCategories={incomeCategories}
+            addCategory={addCategory}
+            removeCategory={removeCategory}
+          />
         ) : (
           <div className="space-y-8 animate-in fade-in duration-500">
             {/* Analytics Section */}
