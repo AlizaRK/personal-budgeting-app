@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import logo from './assets/logo2-crop.png';
 import {
   PencilLine,
   ArrowUpCircle,
@@ -20,12 +21,12 @@ import CategoriesView from './components/CategoriesView';
 
 const App = () => {
   const formRef = useRef(null);
-  
+
   // Auth & Connection State
   const [user, setUser] = useState(null);
   const [supabaseLibLoaded, setSupabaseLibLoaded] = useState(false);
   const [view, setView] = useState(localStorage.getItem('currentView') || 'dashboard');
-  
+
   // Data State
   const [loading, setLoading] = useState(false);
   const [records, setRecords] = useState([]);
@@ -74,10 +75,28 @@ const App = () => {
 
   useEffect(() => {
     if (!supabase) return;
-    supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+
+    // 1. Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
     });
+
+    // 2. Listen for changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+
+      // KEY ADDITION: Catch the recovery event
+      if (event === "PASSWORD_RECOVERY") {
+        setView('update-password');
+      }
+
+      // If they sign out, clear local view preference
+      if (event === "SIGNED_OUT") {
+        setView('dashboard');
+        localStorage.removeItem('currentView');
+      }
+    });
+
     return () => subscription.unsubscribe();
   }, [supabase]);
 
@@ -127,10 +146,10 @@ const App = () => {
 
     setLoading(true);
     try {
-      const { error } = editingId 
+      const { error } = editingId
         ? await supabase.from('records').update(recordData).eq('id', editingId)
         : await supabase.from('records').insert([recordData]);
-      
+
       if (error) throw error;
       setEditingId(null);
       setAmount('');
@@ -170,7 +189,7 @@ const App = () => {
       curr.type === 'earning' ? acc.income += curr.amount : acc.expense += curr.amount;
       return acc;
     }, { income: 0, expense: 0 });
-    
+
     const spending = records.reduce((acc, curr) => {
       if (curr.type === 'expense') acc[curr.category] = (acc[curr.category] || 0) + curr.amount;
       return acc;
@@ -191,7 +210,7 @@ const App = () => {
     <div className="min-h-screen bg-[#FFFBF4] text-gray-800 font-sans pb-20">
       <nav className="max-w-7xl mx-auto px-6 py-6 md:py-10 flex justify-between items-center">
         <div className="flex items-center gap-5">
-          <img src="src/assets/logo2-crop.png" alt="Logo" className="h-20 w-auto mix-blend-multiply brightness-95" />
+          <img src={logo} alt="Logo" className="h-20 w-auto mix-blend-multiply brightness-95" />
           <div>
             <h1 className="text-4xl font-bold text-cashplet-dark tracking-tighter">Cashplet</h1>
             <span className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Smart Money tracking</span>
@@ -209,6 +228,8 @@ const App = () => {
       <main className="max-w-7xl mx-auto px-6">
         {!user ? (
           <AuthView supabase={supabase} />
+        ) : view === 'update-password' ? ( // ADD THIS BLOCK
+          <UpdatePasswordView supabase={supabase} setView={setView} />
         ) : view === 'accounts' ? (
           <AccountsView setView={setView} accounts={accounts} fetchData={fetchData} />
         ) : view === 'categories' ? (

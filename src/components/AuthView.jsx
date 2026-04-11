@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Wallet } from 'lucide-react';
+import { Wallet, Mail, Lock } from 'lucide-react';
 
 const AuthView = ({ supabase }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -9,11 +9,23 @@ const AuthView = ({ supabase }) => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 
-  const handleManualForgot = () => {
-    if (!email) return setError("Enter your email so we know which account to reset.");
-    const subject = encodeURIComponent("Password Reset Request - Cashplet");
-    const body = encodeURIComponent(`Hi, I forgot my password for the account: ${email}. Please reset it for me.`);
-    window.location.href = `mailto:aliza.khorasi@gmail.com?subject=${subject}&body=${body}`;
+  const handleForgotPassword = async () => {
+    if (!email) return setError("Enter your email first so we can send a reset link.");
+    
+    setLoading(true);
+    setError('');
+    setMessage('');
+
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://cashplet.app',
+    });
+
+    if (resetError) {
+      setError(resetError.message);
+    } else {
+      setMessage("Success! Check your email for the reset link.");
+    }
+    setLoading(false);
   };
 
   const handleAuth = async (e) => {
@@ -25,21 +37,18 @@ const AuthView = ({ supabase }) => {
 
     try {
       if (isLogin) {
-        // --- LOGIN LOGIC ---
         const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
         if (authError) throw authError;
       } else {
-        // --- SIGNUP LOGIC ---
-        const { data, error: authError } = await supabase.auth.signUp({ 
-          email, 
+        const { data, error: authError } = await supabase.auth.signUp({
+          email,
           password,
           options: {
-            emailRedirectTo: window.location.origin,
+            emailRedirectTo: 'https://cashplet.app',
           }
         });
         if (authError) throw authError;
-        
-        // If email confirmation is enabled in Supabase, session will be null
+
         if (!data.session) {
           setMessage("Check your email for the confirmation link!");
           setIsLogin(true);
@@ -71,38 +80,50 @@ const AuthView = ({ supabase }) => {
         {message && <div className="bg-emerald-50 text-emerald-600 p-4 rounded-2xl text-xs font-bold mb-6 border border-emerald-100">{message}</div>}
 
         <form onSubmit={handleAuth} className="space-y-4">
-          <input 
-            type="email" 
-            placeholder="Email" 
-            required 
-            className="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-amber-500 font-bold" 
-            value={email} 
-            onChange={e => setEmail(e.target.value)} 
-          />
-          <input 
-            type="password" 
-            placeholder="Password" 
-            required 
-            className="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-amber-500 font-bold" 
-            value={password} 
-            onChange={e => setPassword(e.target.value)} 
-          />
-          <button 
-            type="submit" 
-            disabled={loading} 
-            className="w-full py-5 bg-amber-500 text-white rounded-[1.5rem] font-black text-lg shadow-xl hover:bg-amber-600 active:scale-95 transition-all"
+          <div className="relative">
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <input
+              type="email"
+              placeholder="Email"
+              required
+              className="w-full p-4 pl-12 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-amber-500 font-bold"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="relative">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <input
+              type="password"
+              placeholder="Password"
+              required
+              className="w-full p-4 pl-12 bg-gray-50 rounded-2xl outline-none focus:ring-2 focus:ring-amber-500 font-bold"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-5 bg-amber-500 text-white rounded-[1.5rem] font-black text-lg shadow-xl hover:bg-amber-600 active:scale-95 transition-all disabled:opacity-50"
           >
             {loading ? "Processing..." : (isLogin ? "Login" : "Signup")}
           </button>
         </form>
 
         <div className="mt-8 flex flex-col items-center gap-4">
-          <button onClick={() => setIsLogin(!isLogin)} className="text-sm font-black text-amber-600 uppercase tracking-widest">
+          <button onClick={() => { setIsLogin(!isLogin); setError(''); setMessage(''); }} className="text-sm font-black text-amber-600 uppercase tracking-widest">
             {isLogin ? "Need an account? Signup" : "Have an account? Login"}
           </button>
+          
           {isLogin && (
-            <button onClick={handleManualForgot} className="text-xs font-bold text-gray-400 hover:text-amber-500 underline">
-              Forgot Password? (Contact Admin)
+            <button 
+              type="button"
+              onClick={handleForgotPassword} 
+              disabled={loading}
+              className="text-xs font-bold text-gray-400 hover:text-amber-500 underline disabled:opacity-50"
+            >
+              Forgot Password?
             </button>
           )}
         </div>
