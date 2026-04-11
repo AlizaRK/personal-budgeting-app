@@ -65,6 +65,13 @@ const App = () => {
     return () => subscription.unsubscribe();
   }, [supabase]);
 
+  const resetForm = () => {
+    setEditingId(null);
+    setAmount('');
+    setNote('');
+    if (accounts.length > 0) setSelectedAccountId(accounts[0].id);
+  };
+
   // --- Core Data Action ---
   const fetchData = async () => {
     if (!user || !supabase) return;
