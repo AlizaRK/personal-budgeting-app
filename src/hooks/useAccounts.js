@@ -17,8 +17,19 @@ export const useAccounts = (supabase, user) => {
     useEffect(() => { fetchAccounts(); }, [user]);
 
     const addAccount = async (accountData) => {
-        await service.create(accountData);
-        fetchAccounts();
+        try {
+            const { error } = await supabase.from('accounts').insert([{
+                ...accountData,
+                user_id: user.id
+            }]);
+
+            if (error) throw error;
+
+            if (fetchData) await fetchData();
+
+        } catch (err) {
+            console.error(err.message);
+        }
     };
 
     const editAccount = async (id, updates) => {

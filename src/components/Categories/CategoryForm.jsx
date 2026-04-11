@@ -6,16 +6,13 @@ const CategoryForm = ({ onAdd, onEdit, editingCategory, setEditingCategory }) =>
   const [target, setTarget] = useState('');
   const [type, setType] = useState('expense');
 
-  // Sync form fields when a category is selected for editing
   useEffect(() => {
     if (editingCategory) {
       setName(editingCategory.name);
-      setTarget(editingCategory.target || '');
-      setType(editingCategory.type);
+      setTarget(editingCategory.target?.toString() || '');
     } else {
       setName('');
       setTarget('');
-      setType('expense');
     }
   }, [editingCategory]);
 
@@ -45,7 +42,7 @@ const CategoryForm = ({ onAdd, onEdit, editingCategory, setEditingCategory }) =>
     <section className="bg-white rounded-[2.5rem] p-6 shadow-xl border border-amber-50 relative">
       {/* Cancel Edit Button */}
       {editingCategory && (
-        <button 
+        <button
           onClick={() => setEditingCategory(null)}
           className="absolute top-6 right-6 p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 transition-colors"
         >
@@ -58,46 +55,45 @@ const CategoryForm = ({ onAdd, onEdit, editingCategory, setEditingCategory }) =>
       </h3>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-        <input 
-          type="text" 
-          placeholder="Name (e.g., Groceries)" 
-          value={name} 
-          onChange={e => setName(e.target.value)} 
-          className="w-full bg-gray-50 p-4 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-amber-500 transition-all" 
+        <input
+          type="text"
+          placeholder="Name (e.g., Groceries)"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          className="w-full bg-gray-50 p-4 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-amber-500 transition-all"
         />
-        <input 
-          type="number" 
-          placeholder="Monthly Target $" 
-          value={target} 
-          onChange={e => setTarget(e.target.value)} 
-          className="w-full bg-gray-50 p-4 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-amber-500 transition-all" 
+        <input
+          type="number"
+          placeholder="Monthly Target $"
+          value={target}
+          onChange={e => setTarget(e.target.value)}
+          className="w-full bg-gray-50 p-4 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-amber-500 transition-all"
         />
       </div>
 
       <div className="flex gap-2 mb-4">
-        <button 
+        <button
           type="button"
-          onClick={() => setType('expense')} 
+          onClick={() => setType('expense')}
           className={`flex-1 py-3 rounded-xl text-xs font-black transition-all duration-200 ${type === 'expense' ? 'bg-orange-500 text-white shadow-md' : 'bg-gray-100 text-gray-400'}`}
         >
           EXPENSE
         </button>
-        <button 
+        <button
           type="button"
-          onClick={() => setType('earning')} 
+          onClick={() => setType('earning')}
           className={`flex-1 py-3 rounded-xl text-xs font-black transition-all duration-200 ${type === 'earning' ? 'bg-emerald-500 text-white shadow-md' : 'bg-gray-100 text-gray-400'}`}
         >
           INCOME
         </button>
       </div>
 
-      <button 
-        onClick={handleSubmit} 
-        className={`w-full py-4 rounded-2xl font-black shadow-lg transition-all active:scale-95 ${
-          editingCategory 
-            ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-            : 'bg-amber-500 hover:bg-amber-600 text-white'
-        }`}
+      <button
+        onClick={handleSubmit}
+        className={`w-full py-4 rounded-2xl font-black shadow-lg transition-all active:scale-95 ${editingCategory
+          ? 'bg-blue-600 hover:bg-blue-700 text-white'
+          : 'bg-amber-500 hover:bg-amber-600 text-white'
+          }`}
       >
         {editingCategory ? 'Update Category' : 'Create Category'}
       </button>

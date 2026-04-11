@@ -1,8 +1,7 @@
 import React from 'react';
 import { ArrowDownCircle, ArrowUpCircle, Target, Trash2, Edit2 } from 'lucide-react';
 
-const CategoryList = ({ title, categories, onRemove, color }) => {
-    // Determine icon and text color based on the "color" prop
+const CategoryList = ({ title, categories, onEdit, onRemove, color }) => {
     const isExpense = color === 'orange';
     const Icon = isExpense ? ArrowDownCircle : ArrowUpCircle;
     const textColor = isExpense ? 'text-orange-600' : 'text-emerald-600';
@@ -21,7 +20,6 @@ const CategoryList = ({ title, categories, onRemove, color }) => {
                         key={cat.id}
                         className="bg-white p-4 rounded-[1.5rem] flex items-center border border-amber-50 shadow-sm hover:shadow-md transition-all group"
                     >
-                        {/* 1. Left Side: Content */}
                         <div className="flex-1 min-w-0">
                             <p className="font-black text-gray-800 truncate">{cat.name}</p>
                             {cat.target > 0 && (
@@ -31,10 +29,9 @@ const CategoryList = ({ title, categories, onRemove, color }) => {
                             )}
                         </div>
 
-                        {/* 2. Right Side: Actions (Tight Grouping) */}
                         <div className="flex items-center gap-1 ml-4">
                             <button
-                                onClick={() => onEdit(cat)}
+                                onClick={() => onEdit(cat)} // Now this variable exists
                                 className="p-2.5 text-gray-400 hover:text-amber-500 hover:bg-amber-50 rounded-xl transition-all"
                             >
                                 <Edit2 size={16} />

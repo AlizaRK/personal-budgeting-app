@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, ChevronDown, Banknote, CreditCard, Users, Check, TrendingUp } from 'lucide-react';
 import { AccountTypes } from '../../constants/accountTypes';
 
-const AccountForm = ({ onAdd, onEdit, editingAccount, setEditingAccount }) => {
+const AccountsForm = ({ onAdd, onEdit, editingAccount, setEditingAccount }) => {
     const [name, setName] = useState('');
     const [balance, setBalance] = useState('');
     const [type, setType] = useState('cash');
@@ -138,4 +138,4 @@ const AccountForm = ({ onAdd, onEdit, editingAccount, setEditingAccount }) => {
         </section>
     );
 };
-export default AccountForm;
+export default AccountsForm;
