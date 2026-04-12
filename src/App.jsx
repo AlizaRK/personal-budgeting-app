@@ -29,6 +29,7 @@ const App = () => {
   const [selectedAccountId, setSelectedAccountId] = useState('');
   const [note, setNote] = useState('');
   const [editingId, setEditingId] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [dateRange, setDateRange] = useState({
     start: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0],
@@ -113,8 +114,6 @@ const App = () => {
 
   useEffect(() => { if (user) fetchData(); }, [user]);
 
-  // --- Record Handlers ---
-
   const deleteRecord = async (id) => {
     if (window.confirm("Confirm deletion?")) {
       await supabase.from('records').delete().eq('id', id);
@@ -124,48 +123,51 @@ const App = () => {
 
   const handleSaveRecord = async (e) => {
     if (e) e.preventDefault();
-    if (!amount || !selectedAccountId) return;
+
+    if (isSubmitting || !amount || !selectedAccountId) return;
 
     const numAmount = parseFloat(amount);
     const account = accounts.find(a => a.id === selectedAccountId);
-    const isLiability = ['credit', 'payable'].includes(account.type);
+    if (!account) return;
 
+    const isLiability = ['credit', 'payable'].includes(account.type);
     let newBalance = parseFloat(account.balance);
 
-    if (isLiability(account.type)) {
+    if (isLiability) {
       newBalance = type === 'expense' ? newBalance + numAmount : newBalance - numAmount;
     } else {
       newBalance = type === 'expense' ? newBalance - numAmount : newBalance + numAmount;
     }
 
-    setLoading(true);
+    setIsSubmitting(true);
     try {
       const recordData = {
-        amount: numAmount, type, category: activeCategory,
-        account_id: selectedAccountId, note, user_id: user.id
+        amount: numAmount,
+        type,
+        category: activeCategory,
+        account_id: selectedAccountId,
+        note,
+        user_id: user.id
       };
 
-      await supabase.from('records').insert([recordData]);
+      const { error: recordError } = await supabase.from('records').insert([recordData]);
+      if (recordError) throw recordError;
 
-      await supabase.from('accounts').update({ balance: newBalance }).eq('id', selectedAccountId);
-      try {
-        await supabase.from('records').insert([recordData]);
-        await supabase.from('accounts').update({ balance: newBalance }).eq('id', selectedAccountId);
+      const { error: accountError } = await supabase.from('accounts')
+        .update({ balance: newBalance })
+        .eq('id', selectedAccountId);
+      if (accountError) throw accountError;
 
-        await fetchData();
-
-        resetForm();
-      } catch (err) {
-        console.error(err);
-      }
+      await fetchData();
 
       setAmount('');
       setNote('');
-      fetchData();
+      if (typeof resetForm === 'function') resetForm();
+
     } catch (err) {
       console.error("Save error:", err);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 

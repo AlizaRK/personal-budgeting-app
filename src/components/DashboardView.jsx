@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { TrendingUp, Calendar, Target, History, Wallet, 
-    ArrowUpCircle, ArrowDownCircle, PencilLine, Trash2, 
-    Tag, AlertCircle, ChevronDown, Check } from 'lucide-react';
+import {
+    TrendingUp, Calendar, Target, History, Wallet,
+    ArrowUpCircle, ArrowDownCircle, PencilLine, Trash2,
+    Tag, AlertCircle, ChevronDown, Check
+} from 'lucide-react';
 
 // --- HELPER COMPONENT FOR CUSTOM SELECT ---
 const CustomFloatingSelect = ({ label, value, options, onChange, icon: Icon, placeholder, disabled }) => {
@@ -187,7 +189,10 @@ const DashboardView = ({
                                     label="Category"
                                     value={activeCategory}
                                     options={type === 'expense' ? expenseCategories : incomeCategories}
-                                    onChange={setActiveCategory}
+                                    onChange={(val) => {
+                                        const cat = currentCategories.find(c => c.id === val);
+                                        setActiveCategory(cat ? cat.name : val);
+                                    }}
                                     icon={Tag}
                                     placeholder="No Categories"
                                     disabled={(type === 'expense' ? expenseCategories : incomeCategories).length === 0}
@@ -267,8 +272,10 @@ const DashboardView = ({
                                             {r.type === 'earning' ? <ArrowUpCircle size={20} /> : <ArrowDownCircle size={20} />}
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="font-black text-gray-800 leading-tight truncate">{r.category}</p>
-                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
+                                            <p className="font-black text-gray-800 leading-tight truncate">
+                                                {/* Look for the category in your expense or income lists */}
+                                                {[...expenseCategories, ...incomeCategories].find(c => c.id === r.category)?.name || r.category}
+                                            </p>                                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
                                                 {new Date(r.created_at).toLocaleDateString()} • {accounts.find(a => a.id === r.account_id)?.name || 'Account'}
                                             </p>
                                         </div>
