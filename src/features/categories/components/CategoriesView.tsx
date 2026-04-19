@@ -1,0 +1,84 @@
+import React from 'react';
+import { ChevronLeft } from 'lucide-react';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { useCategories } from '../hooks/useCategories';
+import CategoryForm from '../CategoryForm';
+import CategoryList from '../CategoryList';
+import { Category } from '../../../types';
+import { User as SupabaseUser } from '@supabase/supabase-js';
+
+interface CategoriesViewProps {
+  setView: (view: string) => void;
+  user: SupabaseUser;
+  requestDelete: (
+    title: string,
+    message: string,
+    onConfirm: () => void
+  ) => void;
+}
+
+const CategoriesView: React.FC<CategoriesViewProps> = ({
+  setView,
+  user,
+  requestDelete,
+}) => {
+  const {
+    expenseCategories,
+    incomeCategories,
+    addCategory,
+    removeCategory,
+    editCategory,
+    setEditingCategory,
+    editingCategory,
+  } = useCategories(user);
+
+  const handleDelete = (id: string) => {
+    requestDelete(
+      'Delete Category?',
+      'Are you sure? This will not delete your transactions, but they will lose their category label.',
+      () => removeCategory(id)
+    );
+  };
+
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+      <header className="flex items-center justify-between">
+        <button
+          onClick={() => setView('dashboard')}
+          className="p-3 bg-white rounded-2xl border border-amber-50 text-amber-600"
+        >
+          <ChevronLeft size={24} strokeWidth={3} />
+        </button>
+        <h2 className="text-xl font-black text-gray-800">Manage Categories</h2>
+        <div className="w-12"></div>
+      </header>
+
+      {/* Ensure you pass editingCategory if your form needs it to toggle between Add/Edit */}
+      <CategoryForm
+        onAdd={addCategory}
+        onEdit={editCategory}
+        editingCategory={editingCategory}
+        setEditingCategory={setEditingCategory}
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <CategoryList
+          title="Expense Categories"
+          categories={expenseCategories}
+          onEdit={setEditingCategory}
+          onRemove={handleDelete}
+          color="orange"
+        />
+        <CategoryList
+          title="Income Categories"
+          categories={incomeCategories}
+          onEdit={setEditingCategory}
+          onRemove={handleDelete}
+          color="emerald"
+        />
+      </div>
+    </div>
+  );
+};
+
+export default CategoriesView;
