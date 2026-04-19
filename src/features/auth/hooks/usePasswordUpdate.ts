@@ -7,7 +7,10 @@ interface PasswordUpdateState {
   error: string;
 }
 
-export const usePasswordUpdate = (supabase: SupabaseClient, onSuccess: () => void) => {
+export const usePasswordUpdate = (
+  supabase: SupabaseClient,
+  onSuccess: () => void
+) => {
   const [state, setState] = useState<PasswordUpdateState>({
     password: '',
     loading: false,
@@ -15,21 +18,27 @@ export const usePasswordUpdate = (supabase: SupabaseClient, onSuccess: () => voi
   });
 
   const setPassword = (password: string) => {
-    setState(prev => ({ ...prev, password }));
+    setState((prev) => ({ ...prev, password }));
   };
 
-  const updatePassword = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  const updatePassword = async (
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     e.preventDefault();
-    setState(prev => ({ ...prev, loading: true, error: '' }));
+    setState((prev) => ({ ...prev, loading: true, error: '' }));
 
     const { error: updateError } = await supabase.auth.updateUser({
-      password: state.password
+      password: state.password,
     });
 
     if (updateError) {
-      setState(prev => ({ ...prev, error: updateError.message, loading: false }));
+      setState((prev) => ({
+        ...prev,
+        error: updateError.message,
+        loading: false,
+      }));
     } else {
-      alert("Password updated successfully!");
+      alert('Password updated successfully!');
       onSuccess();
     }
   };

@@ -1,6 +1,6 @@
 export type Record = {
-  id: string;
-  created_at: string;
+  id?: string;
+  created_at?: string;
   amount: number;
   category: string;
   note?: string;
@@ -24,12 +24,6 @@ export interface DeleteModalProps {
   onConfirm: () => void;
   title: string;
   message: string;
-}
-
-export interface User {
-  id: string;
-  email?: string;
-  // Add other user properties as needed
 }
 
 export interface AuthState {

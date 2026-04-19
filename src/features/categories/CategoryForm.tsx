@@ -3,13 +3,23 @@ import { X } from 'lucide-react';
 import { Category } from '../../types';
 
 interface CategoryFormProps {
-  onAdd: (categoryData: Omit<Category, 'id' | 'user_id' | 'created_at'>) => void;
-  onEdit: (id: string, updates: Partial<Omit<Category, 'id' | 'user_id' | 'created_at'>>) => void;
+  onAdd: (
+    categoryData: Omit<Category, 'id' | 'user_id' | 'created_at'>
+  ) => void;
+  onEdit: (
+    id: string,
+    updates: Partial<Omit<Category, 'id' | 'user_id' | 'created_at'>>
+  ) => void;
   editingCategory: Category | null;
   setEditingCategory: (category: Category | null) => void;
 }
 
-const CategoryForm: React.FC<CategoryFormProps> = ({ onAdd, onEdit, editingCategory, setEditingCategory }) => {
+const CategoryForm: React.FC<CategoryFormProps> = ({
+  onAdd,
+  onEdit,
+  editingCategory,
+  setEditingCategory,
+}) => {
   const [name, setName] = useState<string>('');
   const [target, setTarget] = useState<string>('');
   const [type, setType] = useState<'expense' | 'earning'>('expense');
@@ -33,7 +43,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ onAdd, onEdit, editingCateg
     const categoryData = {
       name: name.trim(),
       target: parseFloat(target) || 0,
-      type: type
+      type: type,
     };
 
     if (editingCategory) {
@@ -70,14 +80,18 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ onAdd, onEdit, editingCateg
             type="text"
             placeholder="Name (e.g., Groceries)"
             value={name}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setName(e.target.value)
+            }
             className="w-full bg-gray-50 p-4 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-amber-500 transition-all"
           />
           <input
             type="number"
             placeholder="Monthly Target $"
             value={target}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTarget(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setTarget(e.target.value)
+            }
             className="w-full bg-gray-50 p-4 rounded-2xl text-sm font-bold outline-none focus:ring-2 focus:ring-amber-500 transition-all"
           />
         </div>
@@ -101,10 +115,11 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ onAdd, onEdit, editingCateg
 
         <button
           type="submit"
-          className={`w-full py-4 rounded-2xl font-black shadow-lg transition-all active:scale-95 ${editingCategory
-            ? 'bg-blue-600 hover:bg-blue-700 text-white'
-            : 'bg-amber-500 hover:bg-amber-600 text-white'
-            }`}
+          className={`w-full py-4 rounded-2xl font-black shadow-lg transition-all active:scale-95 ${
+            editingCategory
+              ? 'bg-blue-600 hover:bg-blue-700 text-white'
+              : 'bg-amber-500 hover:bg-amber-600 text-white'
+          }`}
         >
           {editingCategory ? 'Update Category' : 'Create Category'}
         </button>

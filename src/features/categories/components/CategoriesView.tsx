@@ -4,16 +4,24 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { useCategories } from '../hooks/useCategories';
 import CategoryForm from '../CategoryForm';
 import CategoryList from '../CategoryList';
-import { Category, User } from '../../../types';
+import { Category } from '../../../types';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface CategoriesViewProps {
   setView: (view: string) => void;
-  supabase: SupabaseClient;
-  user: User;
-  requestDelete: (title: string, message: string, onConfirm: () => void) => void;
+  user: SupabaseUser;
+  requestDelete: (
+    title: string,
+    message: string,
+    onConfirm: () => void
+  ) => void;
 }
 
-const CategoriesView: React.FC<CategoriesViewProps> = ({ setView, supabase, user, requestDelete }) => {
+const CategoriesView: React.FC<CategoriesViewProps> = ({
+  setView,
+  user,
+  requestDelete,
+}) => {
   const {
     expenseCategories,
     incomeCategories,
@@ -21,13 +29,13 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({ setView, supabase, user
     removeCategory,
     editCategory,
     setEditingCategory,
-    editingCategory
-  } = useCategories(supabase, user);
+    editingCategory,
+  } = useCategories(user);
 
   const handleDelete = (id: string) => {
     requestDelete(
-      "Delete Category?",
-      "Are you sure? This will not delete your transactions, but they will lose their category label.",
+      'Delete Category?',
+      'Are you sure? This will not delete your transactions, but they will lose their category label.',
       () => removeCategory(id)
     );
   };
@@ -35,7 +43,10 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({ setView, supabase, user
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
       <header className="flex items-center justify-between">
-        <button onClick={() => setView('dashboard')} className="p-3 bg-white rounded-2xl border border-amber-50 text-amber-600">
+        <button
+          onClick={() => setView('dashboard')}
+          className="p-3 bg-white rounded-2xl border border-amber-50 text-amber-600"
+        >
           <ChevronLeft size={24} strokeWidth={3} />
         </button>
         <h2 className="text-xl font-black text-gray-800">Manage Categories</h2>

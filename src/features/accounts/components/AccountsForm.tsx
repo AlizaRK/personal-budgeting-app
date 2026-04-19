@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ChevronDown, Banknote, CreditCard, Users, Check, TrendingUp, LucideIcon } from 'lucide-react';
+import {
+  X,
+  ChevronDown,
+  Banknote,
+  CreditCard,
+  Users,
+  Check,
+  TrendingUp,
+  LucideIcon,
+} from 'lucide-react';
 import { AccountTypes, AccountType } from '../../../types/AccountProps';
 import { Account, AccountData } from '../../../types/AccountProps';
 
@@ -10,7 +19,12 @@ interface AccountsFormProps {
   setEditingAccount: (account: Account | null) => void;
 }
 
-const AccountsForm: React.FC<AccountsFormProps> = ({ onAdd, onEdit, editingAccount, setEditingAccount }) => {
+const AccountsForm: React.FC<AccountsFormProps> = ({
+  onAdd,
+  onEdit,
+  editingAccount,
+  setEditingAccount,
+}) => {
   const [name, setName] = useState<string>('');
   const [balance, setBalance] = useState<string>('');
   const [type, setType] = useState<AccountType>('cash');
@@ -46,13 +60,37 @@ const AccountsForm: React.FC<AccountsFormProps> = ({ onAdd, onEdit, editingAccou
     desc: string;
     color: string;
   }> = [
-    { value: AccountTypes.CASH, label: 'Cash / Bank', icon: Banknote, desc: 'Assets & Savings', color: 'text-emerald-500' },
-    { value: AccountTypes.CREDIT, label: 'Credit Card', icon: CreditCard, desc: 'Bank Liabilities', color: 'text-purple-500' },
-    { value: AccountTypes.PAYABLE, label: 'Money I Owe', icon: Users, desc: 'Personal Debt', color: 'text-red-500' },
-    { value: AccountTypes.RECEIVABLE, label: 'Money Owed to Me', icon: TrendingUp, desc: 'Personal Loans/IOUs', color: 'text-blue-500' },
+    {
+      value: AccountTypes.CASH,
+      label: 'Cash / Bank',
+      icon: Banknote,
+      desc: 'Assets & Savings',
+      color: 'text-emerald-500',
+    },
+    {
+      value: AccountTypes.CREDIT,
+      label: 'Credit Card',
+      icon: CreditCard,
+      desc: 'Bank Liabilities',
+      color: 'text-purple-500',
+    },
+    {
+      value: AccountTypes.PAYABLE,
+      label: 'Money I Owe',
+      icon: Users,
+      desc: 'Personal Debt',
+      color: 'text-red-500',
+    },
+    {
+      value: AccountTypes.RECEIVABLE,
+      label: 'Money Owed to Me',
+      icon: TrendingUp,
+      desc: 'Personal Loans/IOUs',
+      color: 'text-blue-500',
+    },
   ];
 
-  const selectedOption = options.find(opt => opt.value === type);
+  const selectedOption = options.find((opt) => opt.value === type);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -61,7 +99,7 @@ const AccountsForm: React.FC<AccountsFormProps> = ({ onAdd, onEdit, editingAccou
     const accountData: AccountData = {
       name: name.trim(),
       balance: parseFloat(balance) || 0,
-      type: type
+      type: type,
     };
 
     if (editingAccount) {
@@ -89,21 +127,27 @@ const AccountsForm: React.FC<AccountsFormProps> = ({ onAdd, onEdit, editingAccou
             type="text"
             placeholder="Account Name"
             value={name}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setName(e.target.value)
+            }
             className="w-full bg-gray-50 p-4 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-amber-400 focus:bg-white transition-all"
           />
           <input
             type="number"
             placeholder="Balance"
             value={balance}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBalance(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setBalance(e.target.value)
+            }
             className="w-full bg-gray-50 p-4 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-amber-400 focus:bg-white transition-all"
           />
         </div>
 
         {/* --- CUSTOM MATERIAL-STYLE DROPDOWN --- */}
         <div className="relative mb-8" ref={menuRef}>
-          <label className="text-[10px] font-black text-gray-400 uppercase ml-2 mb-2 block">Wallet Type</label>
+          <label className="text-[10px] font-black text-gray-400 uppercase ml-2 mb-2 block">
+            Wallet Type
+          </label>
 
           {/* The Trigger Button */}
           <button
@@ -113,13 +157,21 @@ const AccountsForm: React.FC<AccountsFormProps> = ({ onAdd, onEdit, editingAccou
           >
             <div className="flex items-center gap-3">
               {selectedOption ? (
-                <selectedOption.icon className={selectedOption.color} size={20} />
+                <selectedOption.icon
+                  className={selectedOption.color}
+                  size={20}
+                />
               ) : (
                 <div className="text-gray-400">Select an option</div>
               )}
-              <span>{selectedOption ? selectedOption.label : 'Select an option'}</span>
+              <span>
+                {selectedOption ? selectedOption.label : 'Select an option'}
+              </span>
             </div>
-            <ChevronDown size={20} className={`transition-transform duration-300 ${isMenuOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown
+              size={20}
+              className={`transition-transform duration-300 ${isMenuOpen ? 'rotate-180' : ''}`}
+            />
           </button>
 
           {/* The Floating Menu */}
@@ -129,19 +181,30 @@ const AccountsForm: React.FC<AccountsFormProps> = ({ onAdd, onEdit, editingAccou
                 <button
                   key={opt.value}
                   type="button"
-                  onClick={() => { setType(opt.value); setIsMenuOpen(false); }}
+                  onClick={() => {
+                    setType(opt.value);
+                    setIsMenuOpen(false);
+                  }}
                   className="w-full flex items-center justify-between p-4 hover:bg-amber-50 transition-colors text-left"
                 >
                   <div className="flex items-center gap-4">
-                    <div className={`p-2 rounded-xl bg-white shadow-sm ${opt.color}`}>
+                    <div
+                      className={`p-2 rounded-xl bg-white shadow-sm ${opt.color}`}
+                    >
                       <opt.icon size={18} />
                     </div>
                     <div>
-                      <p className="font-black text-sm text-gray-800">{opt.label}</p>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase">{opt.desc}</p>
+                      <p className="font-black text-sm text-gray-800">
+                        {opt.label}
+                      </p>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase">
+                        {opt.desc}
+                      </p>
                     </div>
                   </div>
-                  {type === opt.value && <Check size={18} className="text-amber-500" />}
+                  {type === opt.value && (
+                    <Check size={18} className="text-amber-500" />
+                  )}
                 </button>
               ))}
             </div>

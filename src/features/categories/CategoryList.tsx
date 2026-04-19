@@ -1,5 +1,11 @@
 import React from 'react';
-import { ArrowDownCircle, ArrowUpCircle, Target, Trash2, Edit2 } from 'lucide-react';
+import {
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Target,
+  Trash2,
+  Edit2,
+} from 'lucide-react';
 import { Category } from '../../types';
 
 interface CategoryListProps {
@@ -10,7 +16,13 @@ interface CategoryListProps {
   color: 'orange' | 'emerald';
 }
 
-const CategoryList: React.FC<CategoryListProps> = ({ title, categories, onEdit, onRemove, color }) => {
+const CategoryList: React.FC<CategoryListProps> = ({
+  title,
+  categories,
+  onEdit,
+  onRemove,
+  color,
+}) => {
   const isExpense = color === 'orange';
   const Icon = isExpense ? ArrowDownCircle : ArrowUpCircle;
   const textColor = isExpense ? 'text-orange-600' : 'text-emerald-600';
@@ -22,9 +34,11 @@ const CategoryList: React.FC<CategoryListProps> = ({ title, categories, onEdit, 
       </h4>
 
       {categories.length === 0 ? (
-        <p className="text-xs font-bold text-gray-300 px-2 italic">No categories yet.</p>
+        <p className="text-xs font-bold text-gray-300 px-2 italic">
+          No categories yet.
+        </p>
       ) : (
-        categories.map(cat => (
+        categories.map((cat) => (
           <div
             key={cat.id}
             className="bg-white p-4 rounded-[1.5rem] flex items-center border border-amber-50 shadow-sm hover:shadow-md transition-all group"

@@ -12,8 +12,11 @@ export const useAuthActions = (supabase: SupabaseClient) => {
     message: '',
   });
 
-  const setAuthStateField = <K extends keyof AuthState>(field: K, value: AuthState[K]) => {
-    setAuthState(prev => ({ ...prev, [field]: value }));
+  const setAuthStateField = <K extends keyof AuthState>(
+    field: K,
+    value: AuthState[K]
+  ) => {
+    setAuthState((prev) => ({ ...prev, [field]: value }));
   };
 
   const resetMessages = () => {
@@ -23,26 +26,37 @@ export const useAuthActions = (supabase: SupabaseClient) => {
 
   const handleForgotPassword = async (): Promise<void> => {
     if (!authState.email) {
-      setAuthStateField('error', "Enter your email first so we can send a reset link.");
+      setAuthStateField(
+        'error',
+        'Enter your email first so we can send a reset link.'
+      );
       return;
     }
 
     setAuthStateField('loading', true);
     resetMessages();
 
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(authState.email, {
-      redirectTo: 'https://cashplet.app',
-    });
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+      authState.email,
+      {
+        redirectTo: 'https://cashplet.app',
+      }
+    );
 
     if (resetError) {
       setAuthStateField('error', resetError.message);
     } else {
-      setAuthStateField('message', "Success! Check your email for the reset link.");
+      setAuthStateField(
+        'message',
+        'Success! Check your email for the reset link.'
+      );
     }
     setAuthStateField('loading', false);
   };
 
-  const handleAuth = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleAuth = async (
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     e.preventDefault();
     if (!supabase) {
       setAuthStateField('error', 'Database connection not established.');
@@ -55,7 +69,7 @@ export const useAuthActions = (supabase: SupabaseClient) => {
       if (authState.isLogin) {
         const { error: authError } = await supabase.auth.signInWithPassword({
           email: authState.email,
-          password: authState.password
+          password: authState.password,
         });
         if (authError) throw authError;
       } else {
@@ -64,19 +78,24 @@ export const useAuthActions = (supabase: SupabaseClient) => {
           password: authState.password,
           options: {
             emailRedirectTo: 'https://cashplet.app',
-          }
+          },
         });
         if (authError) throw authError;
 
         if (!data.session) {
-          setAuthStateField('message', "Check your email for the confirmation link!");
+          setAuthStateField(
+            'message',
+            'Check your email for the confirmation link!'
+          );
           setAuthStateField('isLogin', true);
         }
       }
     } catch (err: any) {
       let friendlyMessage: string = err.message;
-      if (err.message.includes("User already registered")) friendlyMessage = "Email already in use.";
-      if (err.message.includes("at least 6 characters")) friendlyMessage = "Password must be 6+ chars.";
+      if (err.message.includes('User already registered'))
+        friendlyMessage = 'Email already in use.';
+      if (err.message.includes('at least 6 characters'))
+        friendlyMessage = 'Password must be 6+ chars.';
       setAuthStateField('error', friendlyMessage);
     } finally {
       setAuthStateField('loading', false);
