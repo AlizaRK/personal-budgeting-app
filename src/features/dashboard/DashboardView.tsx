@@ -292,7 +292,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                   options={accounts}
                   onChange={setSelectedAccountId}
                   icon={Wallet}
-                  placeholder="No Accounts"
+                  placeholder={accounts.length === 0 ? "No Accounts" : accounts[0]?.name}
                   disabled={accounts.length === 0}
                 />
                 <CustomFloatingSelect
@@ -306,7 +306,11 @@ const DashboardView: React.FC<DashboardViewProps> = ({
                     setActiveCategory(cat ? cat.name : val);
                   }}
                   icon={Tag}
-                  placeholder="No Categories"
+                  placeholder={ expenseCategories.length === 0 || incomeCategories.length === 0
+                   ? 'No Categories'
+                   :
+                    type === 'expense' ? expenseCategories[0]?.name : incomeCategories[0]?.name
+                  }
                   disabled={
                     (type === 'expense' ? expenseCategories : incomeCategories)
                       .length === 0
